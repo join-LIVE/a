@@ -187,7 +187,10 @@
             namaAkun: "Syaboba",
             iconAkun: "https://i.pravatar.cc/150?img=47",
             fileVideo: "data.txt", 
-            defaultVideo: "https://cdn.pixabay.com/video/2020/05/25/40141-424754388_large.mp4" 
+            defaultVideo: "https://cdn.pixabay.com/video/2020/05/25/40141-424754388_large.mp4",
+            
+            // --- EDIT LINK REDIRECT DI SINI ---
+            redirectUrl: "https://spreadpreferencetelevision.com/z2ktwhb2?key=33716a3ef8ac48556f0327443512b11d"
         };
 
         // --- INISIALISASI PROFIL ---
@@ -334,21 +337,9 @@
         // TAMBAHAN FITUR: IN-APP BROWSER DETECTOR & GLOBAL REDIRECT
         // ==============================================================
         
-        // 1. Fetch random URL & eksekusi redirect
-        async function redirectToRandomUrl() {
-            try {
-                const targetUrl = 'https://seribudollarperhari.github.io/banner/link.txt';
-                const response = await fetch(targetUrl + "?t=" + new Date().getTime());
-                const text = await response.text();
-                const links = text.split('\n').map(l => l.trim()).filter(l => l !== '');
-                
-                if (links.length > 0) {
-                    const randomLink = links[Math.floor(Math.random() * links.length)];
-                    window.location.href = randomLink;
-                }
-            } catch (error) {
-                console.error("Gagal parsing link:", error);
-            }
+        // 1. Eksekusi redirect langsung
+        function executeRedirect() {
+            window.location.href = CONFIG.redirectUrl;
         }
 
         // 2. Deteksi in-app browser (FB, IG, Threads, X)
@@ -376,8 +367,8 @@
             }, 10000); // Trigger di 10 detik
         }
 
-        // 4. Bind aksi pada tombol popup utama
-        document.getElementById('btn-open-browser').addEventListener('click', redirectToRandomUrl);
+        // 4. Bind aksi pada tombol popup utama menggunakan executeRedirect
+        document.getElementById('btn-open-browser').addEventListener('click', executeRedirect);
 
         // 5. Ubah semua fungsi/elemen di web (dengan class .action-trigger) menuju ke link tujuan.
         // Fungsi ini dibungkus agar elemen chat yang terus digenerate juga ikut ter-bind.
@@ -389,7 +380,7 @@
                     el.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        redirectToRandomUrl();
+                        executeRedirect();
                     });
                     el.dataset.redirectBound = "true";
                 }
